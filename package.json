@@ -1,0 +1,17 @@
+{
+  "name": "storydrive",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "description": "StoryDrive — генератор рекламных сторис из XML-фида MaxPoster",
+  "engines": { "node": ">=22" },
+  "scripts": {
+    "start": "node server/index.js",
+    "check": "node --check server/index.js && node --test"
+  },
+  "dependencies": {
+    "express": "^5.1.0",
+    "pg": "^8.16.3"
+  },
+  "packageManager": "pnpm@10.17.1"
+}

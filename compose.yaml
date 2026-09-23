@@ -1,0 +1,32 @@
+services:
+  postgres:
+    image: postgres:17-alpine
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: storydrive
+      POSTGRES_USER: storydrive
+      POSTGRES_PASSWORD: storydrive-local-password
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U storydrive -d storydrive"]
+      interval: 5s
+      timeout: 3s
+      retries: 10
+    volumes:
+      - storydrive-postgres:/var/lib/postgresql/data
+
+  app:
+    build: .
+    restart: unless-stopped
+    depends_on:
+      postgres:
+        condition: service_healthy
+    environment:
+      NODE_ENV: production
+      PORT: 8080
+      DATABASE_URL: postgresql://storydrive:storydrive-local-password@postgres:5432/storydrive
+      DATABASE_SSL: disable
+    ports:
+      - "8080:8080"
+
+volumes:
+  storydrive-postgres:

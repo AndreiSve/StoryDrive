@@ -1,0 +1,226 @@
+<!doctype html>
+<html lang="ru">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="description" content="Генератор рекламных сторис для автомобилей из XML-фида MaxPoster" />
+    <title>StoryDrive — сторис из XML-фида</title>
+    <link rel="stylesheet" href="styles.css?v=9" />
+  </head>
+  <body class="auth-pending">
+    <div class="ambient ambient-one"></div>
+    <div class="ambient ambient-two"></div>
+
+    <section class="auth-screen" id="authScreen" aria-labelledby="authTitle">
+      <div class="auth-card">
+        <a class="brand auth-brand" href="#" aria-label="StoryDrive">
+          <span class="brand-mark">S</span>
+          <span>StoryDrive</span>
+          <small>beta</small>
+        </a>
+        <p class="eyebrow">ЛИЧНЫЙ КАБИНЕТ</p>
+        <h1 id="authTitle">Войдите в аккаунт</h1>
+        <p class="auth-description" id="authDescription">Ваш XML-фид сохранится в аккаунте и будет доступен при следующем входе.</p>
+
+        <div class="auth-tabs" role="tablist" aria-label="Вход или регистрация">
+          <button class="active" id="loginTab" type="button" role="tab" aria-selected="true">Вход</button>
+          <button id="registerTab" type="button" role="tab" aria-selected="false">Регистрация</button>
+        </div>
+
+        <form class="auth-form" id="authForm">
+          <label for="authEmail">Email</label>
+          <input id="authEmail" name="email" type="email" autocomplete="email" placeholder="name@company.ru" maxlength="254" required />
+          <label for="authPassword">Пароль</label>
+          <input id="authPassword" name="password" type="password" autocomplete="current-password" placeholder="Не менее 10 символов" minlength="10" maxlength="128" required />
+          <label class="auth-confirm-field hidden" id="authConfirmField" for="authConfirm">Повторите пароль</label>
+          <input class="auth-confirm-field hidden" id="authConfirm" name="confirm" type="password" autocomplete="new-password" placeholder="Повторите пароль" minlength="10" maxlength="128" />
+          <p class="auth-error" id="authError" role="alert"></p>
+          <button class="button button-primary button-wide" id="authSubmit" type="submit">Войти</button>
+        </form>
+        <small class="auth-note">Сессия защищена HttpOnly-cookie. Пароль хранится только в виде криптографического хэша.</small>
+      </div>
+    </section>
+
+    <header class="topbar">
+      <a class="brand" href="#" aria-label="StoryDrive — на главную">
+        <span class="brand-mark">S</span>
+        <span>StoryDrive</span>
+        <small>beta</small>
+      </a>
+      <div class="topbar-meta">
+        <span class="status-dot"></span>
+        <span id="feedStatus">Фид ещё не загружен</span>
+      </div>
+      <div class="topbar-actions">
+        <div class="account-menu">
+          <span id="accountEmail"></span>
+          <button id="logoutButton" type="button">Выйти</button>
+        </div>
+        <button class="button button-primary" id="exportTop" type="button">
+          <span>↓</span> Скачать PNG
+        </button>
+      </div>
+    </header>
+
+    <main class="workspace">
+      <nav class="mobile-nav" aria-label="Разделы приложения">
+        <a href="#catalogPanel">Автомобили</a>
+        <a href="#storyStage">Сторис</a>
+        <a href="#settingsPanel">Настройки</a>
+      </nav>
+
+      <section class="panel catalog-panel" id="catalogPanel" aria-label="Каталог автомобилей">
+        <div class="panel-heading">
+          <div>
+            <p class="eyebrow">01 · ИСТОЧНИК</p>
+            <h1>Автомобили</h1>
+          </div>
+          <span class="count" id="vehicleCount">0</span>
+        </div>
+
+        <form class="feed-form" id="feedForm">
+          <label for="feedUrl">XML-фид MaxPoster</label>
+          <div class="input-action">
+            <input id="feedUrl" type="url" placeholder="https://…/feed.xml" autocomplete="url" />
+            <button id="feedSubmit" type="submit" aria-label="Загрузить фид">→</button>
+          </div>
+          <div class="source-actions">
+            <label class="file-button" for="feedFile">Загрузить XML-файл</label>
+            <input id="feedFile" type="file" accept=".xml,text/xml,application/xml" hidden />
+            <button class="link-button" id="clearSavedFeed" type="button">Забыть сохранённый фид</button>
+          </div>
+          <small class="feed-save-note">Ссылка на фид автоматически сохраняется в вашем аккаунте</small>
+        </form>
+
+        <div class="search-wrap">
+          <span>⌕</span>
+          <input id="searchInput" type="search" placeholder="Марка, модель или ID" aria-label="Поиск автомобиля" />
+        </div>
+
+        <div class="catalog-state" id="catalogState">
+          <span class="empty-feed-icon">+</span>
+          <strong>Добавьте XML-фид</strong>
+          <small>Вставьте ссылку MaxPoster или загрузите XML-файл</small>
+        </div>
+        <div class="vehicle-list" id="vehicleList" role="listbox" aria-label="Автомобили из фида"></div>
+      </section>
+
+      <section class="stage" id="storyStage" aria-label="Предпросмотр сторис">
+        <div class="stage-heading">
+          <div>
+            <p class="eyebrow">02 · МАКЕТ</p>
+            <h2>Предпросмотр сторис</h2>
+          </div>
+          <div class="format-pill">1080 × 1920 · 9:16</div>
+        </div>
+
+        <div class="story-shell">
+          <article class="story theme-violet" id="storyPreview">
+            <img class="story-background" id="storyBackground" alt="" aria-hidden="true" />
+            <img class="story-main-image" id="storyImage" alt="Автомобиль в макете сторис" />
+            <div class="story-scrim"></div>
+            <div class="story-noise"></div>
+            <div class="story-top">
+              <div class="dealer-lockup hidden" id="dealerLockup">
+                <span class="dealer-sign" id="dealerSign"></span>
+                <div><strong id="storyDealer"></strong></div>
+              </div>
+              <div class="story-stock">В НАЛИЧИИ</div>
+            </div>
+            <div class="story-bottom">
+              <div class="story-badges" id="storyBadges"></div>
+              <p class="story-kicker" id="storyKicker">АВТОМОБИЛЬ С ПРОБЕГОМ</p>
+              <h3 id="storyTitle">Выберите автомобиль</h3>
+              <div class="story-specs" id="storySpecs"></div>
+              <div class="story-price-row">
+                <div>
+                  <small>СТОИМОСТЬ</small>
+                  <div class="story-price" id="storyPrice">—</div>
+                </div>
+                <div class="story-arrow">↗</div>
+              </div>
+              <div class="story-footer">
+                <span>Свайп, чтобы узнать больше</span>
+              </div>
+            </div>
+          </article>
+        </div>
+
+        <div class="photo-nav">
+          <button id="prevPhoto" type="button" aria-label="Предыдущее фото">←</button>
+          <span id="photoCounter">Фото 0 / 0</span>
+          <button id="nextPhoto" type="button" aria-label="Следующее фото">→</button>
+        </div>
+        <button class="button button-primary stage-save-button" id="saveStoryButton" type="button">
+          <span>↓</span> Сохранить сторис
+        </button>
+      </section>
+
+      <aside class="panel settings-panel" id="settingsPanel" aria-label="Настройки сторис">
+        <div class="panel-heading">
+          <div>
+            <p class="eyebrow">03 · НАСТРОЙКИ</p>
+            <h2>Оформление</h2>
+          </div>
+        </div>
+
+        <div class="setting-group">
+          <label for="priceInput">Цена в сторис</label>
+          <div class="price-input">
+            <input id="priceInput" type="text" inputmode="numeric" placeholder="8 699 000" />
+            <span>₽</span>
+          </div>
+          <button class="reset-button" id="resetPrice" type="button">Вернуть цену из фида</button>
+        </div>
+
+        <div class="setting-group">
+          <div class="setting-title">Преимущества</div>
+          <label class="toggle-row">
+            <span><strong>1 владелец</strong><small id="ownerHint">По данным XML-фида</small></span>
+            <input id="ownerToggle" type="checkbox" />
+            <i></i>
+          </label>
+          <label class="toggle-row">
+            <span><strong>Зелёная Автотека</strong><small id="autotekaHint">Автоопределение + ручная правка</small></span>
+            <input id="autotekaToggle" type="checkbox" />
+            <i></i>
+          </label>
+        </div>
+
+        <div class="setting-group">
+          <label for="photoPosition">Позиция фотографии</label>
+          <div class="range-row">
+            <span>Верх</span>
+            <input id="photoPosition" type="range" min="0" max="100" value="50" />
+            <span>Низ</span>
+          </div>
+        </div>
+
+        <div class="setting-group">
+          <div class="setting-title">Акцентный цвет</div>
+          <div class="theme-grid" id="themeGrid">
+            <button class="theme-option active" data-theme="violet" type="button" aria-label="Фиолетовый"><i></i><span>Violet</span></button>
+            <button class="theme-option" data-theme="lime" type="button" aria-label="Лаймовый"><i></i><span>Lime</span></button>
+            <button class="theme-option" data-theme="orange" type="button" aria-label="Оранжевый"><i></i><span>Orange</span></button>
+            <button class="theme-option" data-theme="red" type="button" aria-label="Красный"><i></i><span>Red</span></button>
+          </div>
+        </div>
+
+        <div class="setting-group">
+          <label for="dealerInput">Название дилера</label>
+          <input class="text-input" id="dealerInput" type="text" placeholder="Введите название" maxlength="18" />
+        </div>
+
+        <div class="export-card">
+          <div><span>PNG</span><strong>1080 × 1920 px</strong></div>
+          <button class="button button-primary button-wide" id="exportButton" type="button">Скачать сторис</button>
+          <small>Файл готов для VK Клипов, Telegram и других площадок</small>
+        </div>
+      </aside>
+    </main>
+
+    <div class="toast" id="toast" role="status" aria-live="polite"></div>
+    <canvas id="exportCanvas" width="1080" height="1920" hidden></canvas>
+    <script src="app.js?v=8"></script>
+  </body>
+</html>
